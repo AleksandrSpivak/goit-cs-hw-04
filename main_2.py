@@ -1,3 +1,5 @@
+# this code works. lets add Queue into mulriprocess, as required in the tast. See main_3.py
+
 import concurrent.futures
 import timeit
 
@@ -32,7 +34,7 @@ def check_my_list(filename):
 def benchmark(func: Callable, text_: str):
     setup_code = f"from __main__ import {func.__name__}"
     stmt = f"{func.__name__}(text)"
-    return timeit.timeit(stmt=stmt, setup=setup_code, globals={'text': text_}, number=1)
+    return timeit.timeit(stmt=stmt, setup=setup_code, globals={'text': text_}, number=10)
 
 def multi_threading(files_list):
     with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
@@ -56,8 +58,8 @@ def multi_process_2(files_list):
 
         [pr.join() for pr in processes]
 
-        formated_list = [dict(d) for d in shared_list]
-    return prepare_result_dict(formated_list)
+        reformated_list = [dict(d) for d in shared_list]
+    return prepare_result_dict(reformated_list)
 
 def simple_check(files_list):
     result_list = []
