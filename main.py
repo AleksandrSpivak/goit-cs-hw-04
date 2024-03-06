@@ -5,6 +5,7 @@ from multiprocessing import Pool, Process, Manager, Queue
 from os import listdir
 from os.path import isfile, join
 from typing import Callable
+from search import boyer_moore_search
 
 # list of words to be find in the files
 MY_LIST = [
@@ -16,20 +17,22 @@ MY_LIST = [
         "math",
         "list",
         "introduction",
-        "annotation"
+        "annotation",
+        "composition",
     ]
 
 def check_my_list(filename):
     """
 	check_my_list is a function that takes a filename as a parameter, checks all words from MY_LIST 
-    whether they are in the file andreturns a dictionary with the word as key and the filename if present, otherwise None.
+    whether they are in the file and returns a dictionary with the word as key and the filename if present, otherwise None.
+    To perform a search it uses boyer_moore_search function, developed during the course 'Basic Algorythms and Structures'
 	"""
 
     dict = {}
     with open(filename, 'r') as f:
         text = f.read()
         for word in MY_LIST:
-            if word in text:
+            if boyer_moore_search(text, word) != -1:
                 dict[word] = filename
             else:
                 dict[word] = None
@@ -49,7 +52,7 @@ def check_my_list_mpr(q, val):
     with open(filename, 'r') as f:
         text = f.read()
         for word in MY_LIST:
-            if word in text:
+            if boyer_moore_search(text, word) != -1:
                 val[word] = filename
             else:
                 val[word] = None
@@ -138,7 +141,7 @@ def benchmark(func: Callable, text_: str):
     """
     setup_code = f"from __main__ import {func.__name__}"
     stmt = f"{func.__name__}(text)"
-    return timeit.timeit(stmt=stmt, setup=setup_code, globals={'text': text_}, number=10)
+    return timeit.timeit(stmt=stmt, setup=setup_code, globals={'text': text_}, number=1)
 
 def prepare_result_dict(result):
     """
@@ -175,6 +178,7 @@ if __name__ == '__main__':
     files_list = [join(".\\texts", f) for f in listdir(".\\texts") if isfile(join(".\\texts", f))]
 
     # prints table with the result of calculation
+    print()
     title = f"{'Approach:':<40}| Time"
     print(title)
     print("-" * len(title))
@@ -190,7 +194,7 @@ if __name__ == '__main__':
     time = benchmark(multi_process_manager_queue, files_list)
     print(f"{'Multi-process/Manager+Queue approach:':<40}| {time:.3f}")
 
-    # compares and prints results of searches
+    # compares results of searches
     print("\nResults of searches:")
     results_sch = simple_check(files_list)
     results_mth = multi_threading(files_list)
@@ -211,4 +215,8 @@ if __name__ == '__main__':
         print(f"Standard approach results == Multi-process/Manager+Queue approach results")
     else:
         print(f"Standard approach results != Multi-process/Manager+Queue approach results")
+    
+    # prints results of searches
+    print("\nResults of the search:")
     print_result_dict(results_sch)
+    
